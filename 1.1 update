@@ -1,0 +1,229 @@
+import requests
+import telebot
+from telebot import types
+from time import strftime, localtime
+from colorama import Fore, init
+
+init(autoreset=True)
+
+cities = {
+    "Сочи": "Sochi, RU",
+    "Анапа": "Anapa, RU",
+    "Новороссийск": "Novorossiysk, RU",
+    "Севастопольская бухта": "Sevastopol, UA",
+    "Балаклава": "Balaklava, UA",
+    "Кача": "Kacha, UA",
+    "Широкая Балка": "Shirokaya Balka, RU",
+    "Ялта": "Yalta, UA",
+    "Мыс Толстяк": "Северная сторона, UA",
+    "Голубая бухта": "Казачья бухта, UA",
+    "Форос": "Foros, UA",
+    "Парк Победы": "Sevastopol, UA",
+    "Фрунзе": "Frunze, UA",
+    "Песчанное": "Uglovoye, UA",
+    "Алушта": "Alushta, UA",
+    "Арабатская Стрелка": "Urochyshche Rozhkova, UA",
+    "Камышовая бухта": "Shablykina, UA",
+    "Немецкая балка": "Kacha, UA",
+    "Фиолент": "Balaklava, UA",
+    "Ласпи": "Laspi, UA",
+    "Учкуевка": "Казачья бухта, UA",
+    "Инжир": "Balaklava, UA",
+}
+
+api_key = 'bf0a20c083fcba8ec90f9c04628badd3'
+bot = telebot.TeleBot('5839014213:AAE568cbq_VI8XXgY3nBEIBEu2s7meH5vPk')
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    current_time = strftime("%a %b %d %H:%M:%S %Y", localtime())
+    print(Fore.LIGHTBLUE_EX + "/start", "спросил:", "ID", Fore.LIGHTGREEN_EX + str(message.from_user.id), "Имя:",
+          Fore.LIGHTGREEN_EX +
+          str(message.from_user.first_name), "Фамилия:", Fore.LIGHTGREEN_EX +
+          str(message.from_user.last_name), "Ник:", Fore.LIGHTGREEN_EX +
+          str(message.from_user.username), '////', Fore.LIGHTRED_EX + str(current_time))
+
+    bot.reply_to(message,  # replying to user's message instead of just sending a message
+                 f'Привет, {message.from_user.first_name} ! Я бот для показа погоды.'  # text inside the reply
+                 f' Для помощи напишите /help')
+
+
+@bot.message_handler(commands=['help'])  # help command
+def start_message(message):  # help func
+    current_time = strftime("%a %b %d %H:%M:%S %Y", localtime())
+    print(Fore.LIGHTBLUE_EX + "/help", "спросил:", "ID", Fore.LIGHTGREEN_EX + str(message.from_user.id), "Имя:",
+          Fore.LIGHTGREEN_EX +
+          str(message.from_user.first_name), "Фамилия:", Fore.LIGHTGREEN_EX +
+          str(message.from_user.last_name), "Ник:", Fore.LIGHTGREEN_EX +
+          str(message.from_user.username), '////', Fore.LIGHTRED_EX + str(current_time))
+    bot.reply_to(message,
+                 f'Я умею показывать погоду около вашего дома! \n\n'
+                 f' 1. Введите слово /weather1 и выберите Ваш город для прогноза на сегодня.\n'
+                 f' 2.  Введите слово /weather2 и выберите Ваш город для прогноза на завтра.\n'
+                 f' 3. Введите слово /weather35 и выберите Ваш город для прогноза с третьего по пятый дни.\n\n'
+                 f'Для связи с моим создателем по любым вопросам обратитесь к https://t.me/Rac_c00n. \n\n'
+                 f' Что то еще {message.from_user.first_name} ?')
+
+
+def wind_direction(deg):
+    if 23 <= deg < 68:
+        return 'Северо-восток'
+    elif 68 <= deg < 113:
+        return 'Восток'
+    elif 113 <= deg < 158:
+        return 'Юго-восток'
+    elif 158 <= deg < 203:
+        return 'Юг'
+    elif 203 <= deg < 248:
+        return 'Юго-запад'
+    elif 248 <= deg < 293:
+        return 'Запад'
+    elif 293 <= deg < 338:
+        return 'Северо-запад'
+    else:
+        return 'Северный'
+
+
+def get_weather(city, api_key):
+    url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}"
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+
+def weather_replace(weather):
+    weather = weather.replace("thunderstorm with light rain", "Гроза с небольшим дождем⛈")
+    weather = weather.replace("thunderstorm with rain", "Гроза с дождем⛈")
+    weather = weather.replace("thunderstorm with heavy rain", "Гроза с сильным дождем⛈")
+    weather = weather.replace("light thunderstorm", "Легкая гроза⛈")
+    weather = weather.replace("thunderstorm", "Гроза⛈")
+    weather = weather.replace("heavy thunderstorm", "Сильная гроза⛈")
+    weather = weather.replace("ragged thunderstorm", "Местами гроза⛈")
+    weather = weather.replace("thunderstorm with light drizzle", "Гроза с мелким дождем⛈")
+    weather = weather.replace("thunderstorm with drizzle", "Гроза с моросью⛈")
+
+    # drizzle
+    weather = weather.replace("light intensity drizzle", "Мелкая морось💧")
+    weather = weather.replace("drizzle", "Морось💧")
+    weather = weather.replace("heavy intensity drizzle", "Сильная морось💧💧")
+    weather = weather.replace("light intensity drizzle rain", "Слабая морось💧")
+    weather = weather.replace("drizzle rain", "Моросящий дождь🌧")
+    weather = weather.replace("heavy intensity drizzle rain", "Ливень🌧")
+    weather = weather.replace("shower rain and drizzle", "Ливень🌧")
+    weather = weather.replace("heavy shower rain and drizzle", "Ливень🌧")
+    weather = weather.replace("shower drizzle", "Очень сильный дождь🌧")
+
+    # rain
+    weather = weather.replace("light rain", "Легкий дождь🌧")
+    weather = weather.replace("moderate rain", "Умеренный дождь🌧")
+    weather = weather.replace("heavy intensity rain", "Сильный интенсивный дождь🌧")
+    weather = weather.replace("very heavy rain", "Очень сильный дождь🌧")
+    weather = weather.replace("extreme rain", "Сильный дождь🌧")
+    weather = weather.replace("freezing rain", "Ледяной дождь")
+    weather = weather.replace("light intensity shower rain", "Слабый ливень🌧")
+    weather = weather.replace("shower rain", "Ливневый дождь🌧")
+    weather = weather.replace("heavy intensity shower rain", "Сильный ливневый дождь🌧")
+    weather = weather.replace("ragged shower rain", "Прерывистый ливень🌧")
+
+    # snow
+    weather = weather.replace("light snow", "Слабый снег❄")
+    weather = weather.replace("snow", "Снег❄")
+    weather = weather.replace("Heavy snow", "Сильный снег❄")
+    weather = weather.replace("Sleet", "Мокрый снег❄")
+    weather = weather.replace("Light shower sleet", "Слабый снегопад, мокрый снег❄")
+    weather = weather.replace("Shower sleet", "Снегопад, мокрый снег❄")
+    weather = weather.replace("Light rain and snow	", "Слабый дождь со снегом❄")
+    weather = weather.replace("Rain and snow", "Дождь со снегом❄")
+    weather = weather.replace("Light shower snow", "Слабый снегопад❄")
+    weather = weather.replace("Shower snow", "Снегопад❄")
+    weather = weather.replace("Heavy shower snow", "Сильный снегопад❄")
+
+    # atmosphere
+    weather = weather.replace("mist", "Туман🌫")
+    weather = weather.replace("smoke", "Дым🌫")
+    weather = weather.replace("Haze", "Туман🌫")
+    weather = weather.replace("sand/ dust whirls", "песчаные/пылевые вихри💨")
+    weather = weather.replace("fog", "Туман🌫")
+    weather = weather.replace("sand", "Ветер с песком💨")
+    weather = weather.replace("dust", "Пыльный ветер💨")
+    weather = weather.replace("volcanic ash", "Вулканический пепел🌫")
+    weather = weather.replace("squalls", "Шквальный ветер💨")
+    weather = weather.replace("tornado", "Торнадо💨")
+
+    # sky
+    weather = weather.replace("clear sky", "Ясное небо☀")
+    weather = weather.replace("few clouds", "Малооблачно⛅")
+    weather = weather.replace("scattered clouds", "Рассеянные облака🌤")
+    weather = weather.replace("broken clouds", "Дождевые облака☁")
+    weather = weather.replace("overcast clouds", "Грозовые облака☁")
+    return weather
+
+
+def parse_weather_data(data, l_border, r_border, city):
+    forecast = ''
+    for i in range(l_border, r_border):
+        date = data["list"][i]["dt_txt"]
+        weather = data['list'][i]['weather'][0]['description']
+        weather = weather_replace(weather)
+        temperature = data['list'][i]['main']['temp'] - 273.15
+        wind_speed = data['list'][i]['wind']['speed']
+        wind_deg = data['list'][i]['wind']['deg']
+        pressure = data["list"][i]["main"]["pressure"]
+        humidity = data["list"][i]["main"]["humidity"]
+        wind_dir = wind_direction(wind_deg)
+
+        forecast += (f"{date}\n\n"
+                     f"Погода: {weather}\n"
+                     f"Температура: {round(temperature)} °C\n"
+                     f"Влажность: {humidity} % \n"
+                     f"Давление: {pressure} гПа \n"
+                     f"Скорость ветра: {wind_speed} м/с\n"
+                     f"Направление ветра: {wind_dir}\n\n")
+    return forecast
+
+
+def handle_message(message, city, api_key, l_border, r_border):
+    data = get_weather(city, api_key)
+    return parse_weather_data(data, l_border, r_border, city)
+
+
+@bot.message_handler(commands=['weather1', 'weather2', 'weather35'])
+def handle_weather_commands(message):
+    l_border, r_border = {
+        'weather1': (0, 10),
+        'weather2': (10, 20),
+        'weather35': (20, 40),
+    }[message.text[1:]]
+
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, selective=True)
+    for city in cities.keys():
+        markup.add(city)
+    bot.send_message(message.chat.id, "Пожалуйста, выберите вашу локацию:", reply_markup=markup)
+    current_time = strftime("%a %b %d %H:%M:%S %Y", localtime())
+    print(Fore.LIGHTBLUE_EX + message.text, "спросил:", "ID", Fore.LIGHTGREEN_EX + str(message.from_user.id), "Имя:",
+          Fore.LIGHTGREEN_EX +
+          str(message.from_user.first_name), "Фамилия:", Fore.LIGHTGREEN_EX +
+          str(message.from_user.last_name),
+          str(message.from_user.last_name), "Ник:", Fore.LIGHTGREEN_EX +
+          str(message.from_user.username), '////', Fore.LIGHTRED_EX + str(current_time))
+
+    bot.register_next_step_handler(message, process_city, l_border, r_border)
+
+
+def process_city(message, l_border, r_border, requests_count):
+    if message.text in cities:
+        city = cities[message.text]
+        forecast = handle_message(message, city, api_key, l_border, r_border)
+        bot.send_message(message.chat.id, forecast)
+    else:
+        bot.send_message(message.chat.id, "Пожалуйста, выберите город из предложенных вариантов.")
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, selective=True)
+        for city in cities.keys():
+            markup.add(city)
+        bot.send_message(message.chat.id, "Пожалуйста, выберите вашу локацию:", reply_markup=markup)
+        bot.register_next_step_handler(message, process_city, l_border, r_border)
+
+
+if __name__ == '__main__':
+    bot.polling(none_stop=True)
