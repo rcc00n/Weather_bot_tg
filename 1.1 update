@@ -3,6 +3,7 @@ import telebot
 from telebot import types
 from time import strftime, localtime
 from colorama import Fore, init
+import json
 
 init(autoreset=True)
 
@@ -13,6 +14,9 @@ cities = {
     "Севастопольская бухта": "Sevastopol, UA",
     "Балаклава": "Balaklava, UA",
     "Кача": "Kacha, UA",
+    "Новофедоровка": "Saki, UA",
+    "Беляус": "Saki, UA",
+    "Николаевка": "Saki, UA",
     "Широкая Балка": "Shirokaya Balka, RU",
     "Ялта": "Yalta, UA",
     "Мыс Толстяк": "Северная сторона, UA",
@@ -31,10 +35,12 @@ cities = {
     "Инжир": "Balaklava, UA",
 }
 
+
 api_key = 'bf0a20c083fcba8ec90f9c04628badd3'
 bot = telebot.TeleBot('5839014213:AAE568cbq_VI8XXgY3nBEIBEu2s7meH5vPk')
 
-
+fCounter = 0
+unique_users = []
 @bot.message_handler(commands=['start'])
 def start(message):
     current_time = strftime("%a %b %d %H:%M:%S %Y", localtime())
@@ -51,6 +57,7 @@ def start(message):
 
 @bot.message_handler(commands=['help'])  # help command
 def start_message(message):  # help func
+
     current_time = strftime("%a %b %d %H:%M:%S %Y", localtime())
     print(Fore.LIGHTBLUE_EX + "/help", "спросил:", "ID", Fore.LIGHTGREEN_EX + str(message.from_user.id), "Имя:",
           Fore.LIGHTGREEN_EX +
@@ -85,10 +92,14 @@ def wind_direction(deg):
         return 'Северный'
 
 
+
 def get_weather(city, api_key):
+    global fCounter
+    fCounter += 1
+    print("request amount:", fCounter)
     url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}"
     response = requests.get(url)
-    data = response.json()
+    data = json.loads(response.text)
     return data
 
 
@@ -169,7 +180,8 @@ def parse_weather_data(data, l_border, r_border, city):
         temperature = data['list'][i]['main']['temp'] - 273.15
         wind_speed = data['list'][i]['wind']['speed']
         wind_deg = data['list'][i]['wind']['deg']
-        pressure = data["list"][i]["main"]["pressure"]
+        pressure1 = data["list"][i]["main"]["pressure"]
+        pressure2 = pressure1 * 0.75006156
         humidity = data["list"][i]["main"]["humidity"]
         wind_dir = wind_direction(wind_deg)
 
@@ -177,13 +189,14 @@ def parse_weather_data(data, l_border, r_border, city):
                      f"Погода: {weather}\n"
                      f"Температура: {round(temperature)} °C\n"
                      f"Влажность: {humidity} % \n"
-                     f"Давление: {pressure} гПа \n"
+                     f"Давление: {pressure1} гПа, {pressure2} мм рт ст \n "
                      f"Скорость ветра: {wind_speed} м/с\n"
                      f"Направление ветра: {wind_dir}\n\n")
     return forecast
 
 
 def handle_message(message, city, api_key, l_border, r_border):
+
     data = get_weather(city, api_key)
     return parse_weather_data(data, l_border, r_border, city)
 
@@ -195,7 +208,10 @@ def handle_weather_commands(message):
         'weather2': (10, 20),
         'weather35': (20, 40),
     }[message.text[1:]]
-
+    global unique_users
+    if message.from_user.id not in unique_users:
+        unique_users.append(message.from_user.id)
+    print("unique users:", len(unique_users))
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, selective=True)
     for city in cities.keys():
         markup.add(city)
@@ -211,7 +227,7 @@ def handle_weather_commands(message):
     bot.register_next_step_handler(message, process_city, l_border, r_border)
 
 
-def process_city(message, l_border, r_border, requests_count):
+def process_city(message, l_border, r_border):
     if message.text in cities:
         city = cities[message.text]
         forecast = handle_message(message, city, api_key, l_border, r_border)
