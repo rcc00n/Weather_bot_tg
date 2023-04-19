@@ -35,12 +35,13 @@ cities = {
     "Инжир": "Balaklava, UA",
 }
 
-
 api_key = 'bf0a20c083fcba8ec90f9c04628badd3'
 bot = telebot.TeleBot('5839014213:AAE568cbq_VI8XXgY3nBEIBEu2s7meH5vPk')
 
 fCounter = 0
 unique_users = []
+
+
 @bot.message_handler(commands=['start'])
 def start(message):
     current_time = strftime("%a %b %d %H:%M:%S %Y", localtime())
@@ -92,11 +93,9 @@ def wind_direction(deg):
         return 'Северный'
 
 
-
 def get_weather(city, api_key):
     global fCounter
     fCounter += 1
-    print("request amount:", fCounter)
     url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}"
     response = requests.get(url)
     data = json.loads(response.text)
@@ -196,7 +195,6 @@ def parse_weather_data(data, l_border, r_border, city):
 
 
 def handle_message(message, city, api_key, l_border, r_border):
-
     data = get_weather(city, api_key)
     return parse_weather_data(data, l_border, r_border, city)
 
@@ -211,7 +209,7 @@ def handle_weather_commands(message):
     global unique_users
     if message.from_user.id not in unique_users:
         unique_users.append(message.from_user.id)
-    print("unique users:", len(unique_users))
+
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, selective=True)
     for city in cities.keys():
         markup.add(city)
@@ -223,7 +221,8 @@ def handle_weather_commands(message):
           str(message.from_user.last_name),
           str(message.from_user.last_name), "Ник:", Fore.LIGHTGREEN_EX +
           str(message.from_user.username), '////', Fore.LIGHTRED_EX + str(current_time))
-
+    print(f" \n unique users: {len(unique_users)}")
+    print(f"request amount: {fCounter} \n")
     bot.register_next_step_handler(message, process_city, l_border, r_border)
 
 
