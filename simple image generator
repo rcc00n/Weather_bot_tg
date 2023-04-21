@@ -32,13 +32,11 @@ even_row_color = (236, 240, 241)
 odd_row_color = (255, 255, 255)
 grid_color = (149, 165, 166)
 
-# Отрисовка ячеек
 for row in range(len(data)):
     for column in range(len(data[0])):
         cell_color = header_bg_color if row == 0 else (even_row_color if row % 2 == 0 else odd_row_color)
         draw.rectangle([(column * cell_width, row * cell_height), ((column + 1) * cell_width, (row + 1) * cell_height)], fill=cell_color)
 
-# Отрисовка сетки
 for x in range(0, image_width, cell_width):
     draw.line([(x, 0), (x, image_height)], fill=grid_color, width=2)
 for y in range(0, image_height, cell_height):
@@ -46,7 +44,6 @@ for y in range(0, image_height, cell_height):
 draw.line([(0, image_height - 1), (image_width, image_height - 1)], fill=grid_color, width=2)
 draw.line([(image_width - 1, 0), (image_width - 1, image_height)], fill=grid_color, width=2)
 
-# Отрисовка текста
 for row in range(len(data)):
     for column in range(len(data[0])):
         text = data[row][column]
