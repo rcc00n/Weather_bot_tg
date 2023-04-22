@@ -25,6 +25,7 @@ def create_weather_table_image(data):
 
     image.save("weather_table.png")
 
+
 def draw_cells(draw, num_rows, num_columns_per_line, cell_width, cell_height):
     header_bg_color = (44, 62, 80)
     header_text_color = (255, 255, 255)
