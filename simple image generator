@@ -1,13 +1,65 @@
 from PIL import Image, ImageDraw, ImageFont
+import re
+
+raw_data = """"2023-04-22 03:00:00
+Погода: Легкий дождь🌧
+Температура: 10 °C
+Влажность: 72 %
+Давление: 1008 гПа, 756.06205248 мм рт ст
+Скорость ветра: 3.86 м/с
+Направление ветра: Запад
+2023-04-22 06:00:00
+Погода: Легкий дождь🌧
+Температура: 10 °C
+Влажность: 80 %
+Давление: 1009 гПа, 756.81211404 мм рт ст
+Скорость ветра: 3.08 м/с
+Направление ветра: Северо-запад
+2023-04-22 09:00:00
+Погода: Легкий дождь🌧
+Температура: 11 °C
+Влажность: 84 %
+Давление: 1012 гПа, 759.0622987200001 мм рт ст
+Скорость ветра: 4.96 м/с
+Направление ветра: Северо-запад"""
 
 
-def create_weather_table_image(data):
+# Функция для конвертирования данных
+def convert_data(raw_data):
+    data = re.split('\n\n+', raw_data.strip())
+    result = [
+        ["Дата и время", "Погода", "Температура", "Влажность", "Дата и время", "Давление", "Скорость ветра",
+         "Направление ветра"]
+    ]
+    num_lines = raw_data.count('\n') + 1
+    for _ in range(num_lines):
+        for item in data:
+            lines = item.split('\n')
+            date_time = lines[0].strip()
+            weather = re.search(r'Погода: (.+)', lines[1]).group(1)
+            temperature = re.search(r'Температура: (.+)', lines[2]).group(1)
+            humidity = re.search(r'Влажность: (.+)', lines[3]).group(1)
+            pressure = re.search(r'Давление: (.+)', lines[4]).group(1)
+            wind_speed = re.search(r'Скорость ветра: (.+)', lines[5]).group(1)
+            wind_direction = re.search(r'Направление ветра: (.+)', lines[6]).group(1)
+
+            result.append([date_time, weather, temperature, humidity, date_time, pressure, wind_speed, wind_direction])
+
+    return result
+
+
+# Заполните переменную raw_data данными и вызовите функцию
+converted_data = convert_data(raw_data)
+print(converted_data)
+
+
+def create_weather_table_image(converted_data):
     font = ImageFont.truetype("arial.ttf", 14)
     header_font = ImageFont.truetype("arialbd.ttf", 14)
 
-    num_rows = len(data)
+    num_rows = len(converted_data)
     num_columns_per_line = 4
-    cell_width = int(max([font.getlength(text) for row in data for text in row]) + 20)
+    cell_width = int(max([font.getlength(text) for row in converted_data for text in row]) + 20)
     cell_height = int(font.getlength("A") + 10)
     image_width = int(cell_width * num_columns_per_line)
     image_height = int(cell_height * (num_rows * 2))
@@ -21,7 +73,7 @@ def create_weather_table_image(data):
     draw = ImageDraw.Draw(image)
 
     draw_grid(draw, image_width, image_height, cell_width, cell_height)
-    draw_text(draw, data, num_rows, num_columns_per_line, cell_width, cell_height, font, header_font)
+    draw_text(draw, converted_data, num_rows, num_columns_per_line, cell_width, cell_height, font, header_font)
 
     image.save("weather_table.png")
 
@@ -52,16 +104,16 @@ def draw_grid(draw, image_width, image_height, cell_width, cell_height):
     draw.line([(image_width - 1, 0), (image_width - 1, image_height)], fill=grid_color, width=2)
 
 
-def draw_text(draw, data, num_rows, num_columns_per_line, cell_width, cell_height, font, header_font):
+def draw_text(draw, converted_data, num_rows, num_columns_per_line, cell_width, cell_height, font, header_font):
     header_text_color = (255, 255, 255)
 
     for row in range(num_rows * 2):
         for column in range(num_columns_per_line):
             original_row = row % num_rows
             original_column = column + num_columns_per_line * (row // num_rows)
-            if original_column >= len(data[original_row]):
+            if original_column >= len(converted_data[original_row]):
                 continue
-            text = data[original_row][original_column]
+            text = converted_data[original_row][original_column]
             if text == "":
                 continue
             current_font = header_font if row == 0 or row == num_rows else font
@@ -72,25 +124,25 @@ def draw_text(draw, data, num_rows, num_columns_per_line, cell_width, cell_heigh
             draw.text((x, y), text, font=current_font, fill=text_color)
 
 
-data = [
-    ["Дата и время", "Погода", "Температура", "Влажность", "Дата и время", "Скорость ветра", "Направление ветра",
-     "Давление"],
-    ["2023-04-21 03:00:00", "Грозовые облака", "10 °C", "95 %", "2023-04-21 03:00:00", "3 м/с", "Юго-запад",
-     "1008 гПа, 756 мм рт ст"],
-    ["2023-04-21 06:00:00", "Грозовые облака", "11 °C", "86 %", "2023-04-21 06:00:00", "5 м/с", "Юго-запад",
-     "1008 гПа, 756 мм рт ст"],
-    ["2023-04-21 09:00:00", "Грозовые облака", "15 °C", "63 %", "2023-04-21 09:00:00", "6 м/с", "Юго-запад",
-     "1008 гПа, 756 мм рт ст"],
-    ["2023-04-21 12:00:00", "Легкий дождь", "10 °C", "89 %", "2023-04-21 12:00:00", "5 м/с", "Юго-запад",
-     "1009 гПа, 756 мм рт ст"],
-    ["2023-04-21 15:00:00", "Легкий дождь", "10 °C", "86 %", "2023-04-21 15:00:00", "5 м/с", "Юго-запад",
-     "1009 гПа, 756 мм рт ст"],
-    ["2023-04-21 18:00:00", "Легкий дождь", "9 °C", "90 %", "2023-04-21 18:00:00", "5 м/с", "Юго-запад",
-     "1010 гПа, 757 мм рт ст"],
-    ["2023-04-21 21:00:00", "Легкий дождь", "9 °C", "93 %", "2023-04-21 21:00:00", "5 м/с", "Юго-запад",
-     "1010 гПа, 757 мм рт ст"],
-    ["2023-04-22 00:00:00", "Легкий дождь", "9 °C", "95 %", "2023-04-22 00:00:00", "5 м/с", "Юго-запад",
-     "1010 гПа, 757 мм рт ст"]
-]
+# converted_data = [
+#     ["Дата и время", "Погода", "Температура", "Влажность", "Дата и время", "Скорость ветра", "Направление ветра",
+#      "Давление"],
+#     ["2023-04-21 03:00:00", "Грозовые облака", "10 °C", "95 %", "2023-04-21 03:00:00", "3 м/с", "Юго-запад",
+#      "1008 гПа, 756 мм рт ст"],
+#     ["2023-04-21 06:00:00", "Грозовые облака", "11 °C", "86 %", "2023-04-21 06:00:00", "5 м/с", "Юго-запад",
+#      "1008 гПа, 756 мм рт ст"],
+#     ["2023-04-21 09:00:00", "Грозовые облака", "15 °C", "63 %", "2023-04-21 09:00:00", "6 м/с", "Юго-запад",
+#      "1008 гПа, 756 мм рт ст"],
+#     ["2023-04-21 12:00:00", "Легкий дождь", "10 °C", "89 %", "2023-04-21 12:00:00", "5 м/с", "Юго-запад",
+#      "1009 гПа, 756 мм рт ст"],
+#     ["2023-04-21 15:00:00", "Легкий дождь", "10 °C", "86 %", "2023-04-21 15:00:00", "5 м/с", "Юго-запад",
+#      "1009 гПа, 756 мм рт ст"],
+#     ["2023-04-21 18:00:00", "Легкий дождь", "9 °C", "90 %", "2023-04-21 18:00:00", "5 м/с", "Юго-запад",
+#      "1010 гПа, 757 мм рт ст"],
+#     ["2023-04-21 21:00:00", "Легкий дождь", "9 °C", "93 %", "2023-04-21 21:00:00", "5 м/с", "Юго-запад",
+#      "1010 гПа, 757 мм рт ст"],
+#     ["2023-04-22 00:00:00", "Легкий дождь", "9 °C", "95 %", "2023-04-22 00:00:00", "5 м/с", "Юго-запад",
+#      "1010 гПа, 757 мм рт ст"]
+# ]
 
-create_weather_table_image(data)
+create_weather_table_image(converted_data)
