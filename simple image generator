@@ -23,33 +23,26 @@ raw_data = """"2023-04-22 03:00:00
 Скорость ветра: 4.96 м/с
 Направление ветра: Северо-запад"""
 
+# Convert data
+data = raw_data.strip().split('\n')
+converted_data = [
+    ["Дата и время", "Погода", "Температура", "Влажность", "Дата и время", "Давление", "Скорость ветра",
+     "Направление ветра"]
+]
 
-# Функция для конвертирования данных
-def convert_data(raw_data):
-    data = re.split('\n\n+', raw_data.strip())
-    result = [
-        ["Дата и время", "Погода", "Температура", "Влажность", "Дата и время", "Давление", "Скорость ветра",
-         "Направление ветра"]
-    ]
-    num_lines = raw_data.count('\n') + 1
-    for _ in range(num_lines):
-        for item in data:
-            lines = item.split('\n')
-            date_time = lines[0].strip()
-            weather = re.search(r'Погода: (.+)', lines[1]).group(1)
-            temperature = re.search(r'Температура: (.+)', lines[2]).group(1)
-            humidity = re.search(r'Влажность: (.+)', lines[3]).group(1)
-            pressure = re.search(r'Давление: (.+)', lines[4]).group(1)
-            wind_speed = re.search(r'Скорость ветра: (.+)', lines[5]).group(1)
-            wind_direction = re.search(r'Направление ветра: (.+)', lines[6]).group(1)
+i = 0
+while i < len(data):
+    date_time = data[i].strip()
+    weather = re.search(r'Погода: (.+)', data[i+1]).group(1)
+    temperature = re.search(r'Температура: (.+)', data[i+2]).group(1)
+    humidity = re.search(r'Влажность: (.+)', data[i+3]).group(1)
+    pressure = re.search(r'Давление: (.+)', data[i+4]).group(1)
+    wind_speed = re.search(r'Скорость ветра: (.+)', data[i+5]).group(1)
+    wind_direction = re.search(r'Направление ветра: (.+)', data[i+6]).group(1)
 
-            result.append([date_time, weather, temperature, humidity, date_time, pressure, wind_speed, wind_direction])
+    converted_data.append([date_time, weather, temperature, humidity, date_time, pressure, wind_speed, wind_direction])
+    i += 7
 
-    return result
-
-
-# Заполните переменную raw_data данными и вызовите функцию
-converted_data = convert_data(raw_data)
 print(converted_data)
 
 
@@ -123,26 +116,5 @@ def draw_text(draw, converted_data, num_rows, num_columns_per_line, cell_width, 
             y = (cell_height - text_height) // 2 + cell_height * row
             draw.text((x, y), text, font=current_font, fill=text_color)
 
-
-# converted_data = [
-#     ["Дата и время", "Погода", "Температура", "Влажность", "Дата и время", "Скорость ветра", "Направление ветра",
-#      "Давление"],
-#     ["2023-04-21 03:00:00", "Грозовые облака", "10 °C", "95 %", "2023-04-21 03:00:00", "3 м/с", "Юго-запад",
-#      "1008 гПа, 756 мм рт ст"],
-#     ["2023-04-21 06:00:00", "Грозовые облака", "11 °C", "86 %", "2023-04-21 06:00:00", "5 м/с", "Юго-запад",
-#      "1008 гПа, 756 мм рт ст"],
-#     ["2023-04-21 09:00:00", "Грозовые облака", "15 °C", "63 %", "2023-04-21 09:00:00", "6 м/с", "Юго-запад",
-#      "1008 гПа, 756 мм рт ст"],
-#     ["2023-04-21 12:00:00", "Легкий дождь", "10 °C", "89 %", "2023-04-21 12:00:00", "5 м/с", "Юго-запад",
-#      "1009 гПа, 756 мм рт ст"],
-#     ["2023-04-21 15:00:00", "Легкий дождь", "10 °C", "86 %", "2023-04-21 15:00:00", "5 м/с", "Юго-запад",
-#      "1009 гПа, 756 мм рт ст"],
-#     ["2023-04-21 18:00:00", "Легкий дождь", "9 °C", "90 %", "2023-04-21 18:00:00", "5 м/с", "Юго-запад",
-#      "1010 гПа, 757 мм рт ст"],
-#     ["2023-04-21 21:00:00", "Легкий дождь", "9 °C", "93 %", "2023-04-21 21:00:00", "5 м/с", "Юго-запад",
-#      "1010 гПа, 757 мм рт ст"],
-#     ["2023-04-22 00:00:00", "Легкий дождь", "9 °C", "95 %", "2023-04-22 00:00:00", "5 м/с", "Юго-запад",
-#      "1010 гПа, 757 мм рт ст"]
-# ]
 
 create_weather_table_image(converted_data)
