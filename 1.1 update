@@ -1,3 +1,4 @@
+from runtime_config import required_env
 import requests
 import telebot
 from telebot import types
@@ -35,8 +36,8 @@ cities = {
     "Инжир": "Balaklava, UA",
 }
 
-api_key = 'bf0a20c083fcba8ec90f9c04628badd3'
-bot = telebot.TeleBot('5839014213:AAE568cbq_VI8XXgY3nBEIBEu2s7meH5vPk')
+api_key = required_env("OPENWEATHER_API_KEY")
+bot = telebot.TeleBot(required_env("TELEGRAM_BOT_TOKEN"))
 
 fCounter = 0
 unique_users = []

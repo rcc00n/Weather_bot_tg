@@ -15,3 +15,5 @@ These standard-library checks validate missing/blank environment values, redacte
 ## Scope and limitations
 
 This is historical learning work, not a maintained production weather service. Forecast formatting, fixed locations and external API responses need a separate end-to-end review before reuse. The current weather request uses HTTPS and a finite timeout. No hosted bot or uptime guarantee is claimed. See [SECURITY.md](SECURITY.md) for historical credential handling.
+
+`1.1 update` retains an older extensionless source variant. It uses the same private environment configuration; the regression scan includes it.

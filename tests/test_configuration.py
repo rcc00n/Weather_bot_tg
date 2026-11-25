@@ -32,7 +32,7 @@ class ConfigurationTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         telegram = re.compile(r"\b[0-9]{8,12}:[A-Za-z0-9_-]{30,}\b")
         discord = re.compile(r"\b[A-Za-z0-9_-]{24,}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{25,}\b")
-        for path in root.glob("*.py"):
+        for path in [*root.glob("*.py"), root / "1.1 update"]:
             text = path.read_text()
             self.assertFalse(telegram.search(text) or discord.search(text), path.name)
             tree = ast.parse(text)
