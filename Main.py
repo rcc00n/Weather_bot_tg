@@ -1,3 +1,4 @@
+from runtime_config import required_env
 import requests
 import json
 import telebot
@@ -15,8 +16,8 @@ global i
 l_border = 1  # default left border of measurements number (new measurement each 3 hour)
 r_border = 11  # default right border of measurements number (new measurement each 3 hour)
 
-bot = telebot.TeleBot("5839014213:AAE568cbq_VI8XXgY3nBEIBEu2s7meH5vPk")  # bot 2
-api_key = "bf0a20c083fcba8ec90f9c04628badd3"  # open weather map token (5 days/3 hours free subscription)
+bot = telebot.TeleBot(required_env("TELEGRAM_BOT_TOKEN"))  # bot 2
+api_key = required_env("OPENWEATHER_API_KEY")
 
 # writing cities that work in the bot
 cities = {
@@ -82,8 +83,8 @@ def start_message(message):  # help func
 
 # getting data from OpenWeatherMap
 def get_weather(city, api_key):
-    url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}"  # url with params city and api_key
-    response = requests.get(url)
+    url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}"  # url with params city and api_key
+    response = requests.get(url, timeout=15)
     data = json.loads(response.text)
     return data
 
@@ -269,4 +270,5 @@ def handle_city(message):
     bot.reply_to(message, response)
 
 
-bot.polling(none_stop=True)
+if __name__ == "__main__":
+    bot.polling(none_stop=True)
